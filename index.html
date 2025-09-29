@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cronograma — Crono (Google Sheets)</title>
+  <title>Schedule — Crono (Google Sheets)</title>
   <style>
     :root{
       --bg:#0b0b0c; --panel:#121316; --muted:#8b8d92; --text:#e9eaec;
@@ -64,32 +64,32 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>Cronograma — Epics (Google Sheets)</h1>
-        <div class="sub">Vista pública (solo lectura) · Actualiza en vivo el tiempo restante</div>
+        <h1>Schedule — Epics (Google Sheets)</h1>
+        <div class="sub">Public view (read-only) · Live updates remaining time</div>
       </div>
       <div class="controls">
-        <input class="input" id="q" placeholder="Filtrar por clave, resumen, estado, asignado…" />
+        <input class="input" id="q" placeholder="Filter by key, summary, status, assignee…" />
         <select class="select" id="status">
-          <option value="">Todos los estados</option>
-          <option>Por Hacer</option>
-          <option>En Proceso</option>
-          <option>Completado</option>
+          <option value="">All statuses</option>
+          <option>To Do</option>
+          <option>In Progress</option>
+          <option>Completed</option>
         </select>
       </div>
     </header>
 
     <div id="board" class="board"></div>
-    <div id="empty" class="empty" style="display:none">No hay elementos para mostrar.</div>
-    <footer id="stamp">Sincronizando…</footer>
+    <div id="empty" class="empty" style="display:none">No items to display.</div>
+    <footer id="stamp">Syncing…</footer>
   </div>
 
   <script>
     // === Config ===
-    // Link a la pestaña "Crono" (con gid). Mantén single=true&output=csv.
+    // Link to the "Crono" tab (with gid). Keep single=true&output=csv.
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxNrV687aUqrPHpPxy8oVNjUvilP2Nt76FI6CByIOmShtve6BnsB_JUb317Mb86faVkB0ulWPNof-J/pub?gid=0&single=true&output=csv";
     const CORS_PROXY = "https://api.allorigins.win/raw?url=";
-    const REFRESH_SEC = 120;               // refresh suave del CSV
-    const TIMEZONE = "America/Tijuana";    // tu zona
+    const REFRESH_SEC = 120;               // smooth CSV refresh
+    const TIMEZONE = "America/Tijuana";    // your timezone
     
     // Fallback data in case CSV fetch fails
     const FALLBACK_DATA = [
@@ -97,7 +97,7 @@
         key: "LHR-70",
         type: "Epic",
         sum: "Leads generation",
-        state: "Por Hacer",
+        state: "To Do",
         assg: "",
         start: new Date("2025-09-06"),
         due: new Date("2025-09-30"),
@@ -107,7 +107,7 @@
         key: "LHR-71",
         type: "Epic", 
         sum: "Testing 100 numbers with Broadcast tool",
-        state: "Por Hacer",
+        state: "To Do",
         assg: "",
         start: new Date("2025-09-19"),
         due: new Date("2025-10-08"),
@@ -115,7 +115,7 @@
       }
     ];
 
-    // Colores por "Issue color" de la hoja (palabras claves)
+    // Colors by "Issue color" from the sheet (keywords)
     const COLORS = {
       purple:"#a78bfa", green:"#34d399", orange:"#f59e0b", yellow:"#facc15",
       dark_orange:"#ff8c42", dark_teal:"#14b8a6", blue:"#60a5fa",
@@ -123,7 +123,7 @@
     };
 
     // === Helpers ===
-    const fmtDate = (d) => d ? d.toLocaleDateString("es-MX", { timeZone: TIMEZONE }) : "—";
+    const fmtDate = (d) => d ? d.toLocaleDateString("en-US", { timeZone: TIMEZONE }) : "—";
     const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
     const msToParts = (ms) => {
       const neg = ms < 0; let m = Math.abs(ms);
@@ -136,7 +136,7 @@
     const partsToStr = (p) => `${p.neg ? "-" : ""}${String(p.d).padStart(2,"0")}d:${String(p.h).padStart(2,"0")}h:${String(p.n).padStart(2,"0")}m:${String(p.s).padStart(2,"0")}s`;
     const safe = (v) => (v || "").trim();
 
-    // Fechas del CSV vienen como "YYYY/MM/DD"
+    // Dates from CSV come as "YYYY/MM/DD"
     const fixDate = (s) => {
       if (!s) return null;
       const t = s.trim();
@@ -145,7 +145,7 @@
       return isNaN(d) ? null : d;
     };
 
-    // CSV/TSV parser (simple, soporta comillas y tabs)
+    // CSV/TSV parser (simple, supports quotes and tabs)
     function parseCSV(text){
       const rows=[]; let row=[], cur="", inQ=false;
       for(let i=0;i<text.length;i++){
@@ -237,7 +237,7 @@
           out.push({ key, type, sum, state, assg, start, due, color });
         }
 
-        // Ordenar por due asc
+        // Sort by due date ascending
         out.sort((a,b)=>{
           const ax = a.due ? a.due.getTime():Infinity;
           const bx = b.due ? b.due.getTime():Infinity;
@@ -295,7 +295,7 @@
               ${it.assg ? `<span class="badge">👤 ${it.assg}</span>` : ""}
               ${it.type ? `<span class="badge">${it.type}</span>` : ""}
               <span class="badge">⏳ ${isFinite(pct) ? pct : 0}%</span>
-              ${Number.isFinite(daysLeft) ? `<span class="badge">📅 ${daysLeft >= 0 ? daysLeft+'d restantes' : Math.abs(daysLeft)+'d de atraso'}</span>` : ""}
+              ${Number.isFinite(daysLeft) ? `<span class="badge">📅 ${daysLeft >= 0 ? daysLeft+'d remaining' : Math.abs(daysLeft)+'d overdue'}</span>` : ""}
             </div>
           </div>
           <div class="row2">
@@ -306,8 +306,8 @@
           </div>
           <div class="row3">
             <div class="dates">
-              <span class="pill">Inicio: ${fmtDate(it.start)}</span>
-              <span class="pill">Vence: ${fmtDate(it.due)}</span>
+              <span class="pill">Start: ${fmtDate(it.start)}</span>
+              <span class="pill">Due: ${fmtDate(it.due)}</span>
             </div>
             <div class="count" data-key="${it.key}">—</div>
           </div>
@@ -335,7 +335,7 @@
       const stamp = document.getElementById("stamp");
       if (LAST_SYNC) {
         const left = nextRefreshAt ? Math.max(0, Math.round((nextRefreshAt - Date.now())/1000)) : REFRESH_SEC;
-        stamp.textContent = `Actualizado: ${LAST_SYNC.toLocaleString("es-MX", { timeZone: TIMEZONE })} · Próximo refresh en ~${left}s`;
+        stamp.textContent = `Updated: ${LAST_SYNC.toLocaleString("en-US", { timeZone: TIMEZONE })} · Next refresh in ~${left}s`;
       }
     }
 
@@ -349,10 +349,10 @@
         // Update status message
         const stamp = document.getElementById("stamp");
         if (DATA === FALLBACK_DATA) {
-          stamp.textContent = "Usando datos de respaldo (modo offline)";
+          stamp.textContent = "Using fallback data (offline mode)";
         } else {
           const left = nextRefreshAt ? Math.max(0, Math.round((nextRefreshAt - Date.now())/1000)) : REFRESH_SEC;
-          stamp.textContent = `Actualizado: ${LAST_SYNC.toLocaleString("es-MX", { timeZone: TIMEZONE })} · Próximo refresh en ~${left}s`;
+          stamp.textContent = `Updated: ${LAST_SYNC.toLocaleString("en-US", { timeZone: TIMEZONE })} · Next refresh in ~${left}s`;
         }
       }catch(e){
         console.error(e);
@@ -360,7 +360,7 @@
         empty.style.display = "block";
         empty.textContent = `Error: ${e.message}`;
         const stamp = document.getElementById("stamp");
-        stamp.textContent = `Error al cargar datos: ${e.message}`;
+        stamp.textContent = `Error loading data: ${e.message}`;
       }finally{
         setTimeout(bootstrap, REFRESH_SEC*1000);
       }
