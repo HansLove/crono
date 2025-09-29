@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cronograma — Crono (Google Sheets)</title>
+  <style>
+    :root{
+      --bg:#0b0b0c; --panel:#121316; --muted:#8b8d92; --text:#e9eaec;
+      --line:#1b1c20; --gray:#9ca3af;
+      --purple:#a78bfa; --green:#34d399; --orange:#f59e0b; --yellow:#facc15; --teal:#14b8a6; --blue:#60a5fa; --default:#9ca3af;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background: radial-gradient(1200px 600px at 80% -10%, #1a1b20 0%, #0b0b0c 45%, #0b0b0c 100%);
+      color:var(--text); font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
+    }
+    .wrap{max-width:1100px; margin:40px auto; padding:0 16px}
+    header{display:flex; gap:12px; align-items:end; justify-content:space-between; margin-bottom:16px}
+    h1{margin:0; font-size:22px; letter-spacing:.2px}
+    .sub{color:var(--muted); font-size:12px}
+    .controls{display:flex; gap:8px; flex-wrap:wrap}
+    .input, .select{
+      background:#0f1013; border:1px solid var(--line); color:var(--text);
+      padding:10px 12px; border-radius:12px; outline:none; min-width:220px;
+    }
+    .board{display:grid; gap:12px}
+    .card{
+      background:linear-gradient(180deg, #14161a 0%, #0f1014 100%); border:1px solid var(--line);
+      border-radius:16px; padding:14px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .row1{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between}
+    .left{display:flex; align-items:center; gap:10px; min-width:0}
+    .dot{width:10px; height:10px; border-radius:50%}
+    .key{font-weight:600; color:#fff; letter-spacing:.2px}
+    .sum{color:#d7d8db; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:520px}
+    .badges{display:flex; gap:6px; flex-wrap:wrap}
+    .badge{
+      border:1px solid var(--line); color:var(--muted); padding:4px 8px; border-radius:999px; font-size:11px
+    }
+    .row2{margin-top:12px}
+    .bar{
+      position:relative; height:10px; background:#0d0e11; border:1px solid var(--line);
+      border-radius:999px; overflow:hidden;
+    }
+    .fill{position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg, #5865f2, #38bdf8);
+      width:0%; transition:width .6s ease; }
+    .today{position:absolute; top:-6px; bottom:-6px; width:2px; background:#ffffff20}
+    .row3{display:flex; align-items:center; justify-content:space-between; color:var(--muted); margin-top:8px; font-size:12px}
+    .dates{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    .count{font-feature-settings: "tnum" 1, "opsz" 144; color:#fff; font-weight:600}
+    .pill{
+      border:1px dashed #2a2c33; color:#aab; padding:3px 8px; border-radius:999px; font-size:11px
+    }
+    .warn{color:#ffd166}
+    .late{color:#ff7b7b}
+    footer{margin-top:18px; color:var(--muted); font-size:11px}
+    .empty{color:var(--muted); text-align:center; padding:40px 0; border:1px dashed var(--line); border-radius:12px}
+    @media (max-width:700px){ .sum{max-width:260px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Cronograma — Epics (Google Sheets)</h1>
+        <div class="sub">Vista pública (solo lectura) · Actualiza en vivo el tiempo restante</div>
+      </div>
+      <div class="controls">
+        <input class="input" id="q" placeholder="Filtrar por clave, resumen, estado, asignado…" />
+        <select class="select" id="status">
+          <option value="">Todos los estados</option>
+          <option>Ideas 💡</option>
+          <option>En proceso 🚧</option>
+          <option>Listo ✅</option>
+        </select>
+      </div>
+    </header>
+
+    <div id="board" class="board"></div>
+    <div id="empty" class="empty" style="display:none">No hay elementos para mostrar.</div>
+    <footer id="stamp">Sincronizando…</footer>
+  </div>
+
+  <script>
+    // === Config ===
+    // Link a la pestaña "Crono" (con gid). Mantén single=true&output=csv.
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS83B70T4rAqHVXvTF-N9sPKHxaBW3VGnW2puE_Ayzc5uQ9Yu7W54l_celzoKfr1kQPABiWPKvUVv5h/pub?gid=1214289446&single=true&output=csv";
+    const REFRESH_SEC = 120;               // refresh suave del CSV
+    const TIMEZONE = "America/Tijuana";    // tu zona
+
+    // Colores por "Issue color" de la hoja (palabras claves)
+    const COLORS = {
+      purple:"#a78bfa", green:"#34d399", orange:"#f59e0b", yellow:"#facc15",
+      dark_orange:"#ff8c42", dark_teal:"#14b8a6", blue:"#60a5fa",
+      default:"#9ca3af"
+    };
+
+    // === Helpers ===
+    const fmtDate = (d) => d ? d.toLocaleDateString("es-MX", { timeZone: TIMEZONE }) : "—";
+    const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+    const msToParts = (ms) => {
+      const neg = ms < 0; let m = Math.abs(ms);
+      const d = Math.floor(m / 86400000); m -= d*86400000;
+      const h = Math.floor(m / 3600000);  m -= h*3600000;
+      const n = Math.floor(m / 60000);    m -= n*60000;
+      const s = Math.floor(m / 1000);
+      return {neg, d, h, n, s};
+    };
+    const partsToStr = (p) => `${p.neg ? "-" : ""}${String(p.d).padStart(2,"0")}d:${String(p.h).padStart(2,"0")}h:${String(p.n).padStart(2,"0")}m:${String(p.s).padStart(2,"0")}s`;
+    const safe = (v) => (v || "").trim();
+
+    // Fechas del CSV vienen como "YYYY/MM/DD"
+    const fixDate = (s) => {
+      if (!s) return null;
+      const t = s.trim().replace(/\./g,'').replaceAll('/', '-');
+      const d = new Date(`${t}T00:00:00`);
+      return isNaN(d) ? null : d;
+    };
+
+    // CSV parser (simple, soporta comillas)
+    function parseCSV(text){
+      const rows=[]; let row=[], cur="", inQ=false;
+      for(let i=0;i<text.length;i++){
+        const c=text[i], n=text[i+1];
+        if (inQ){
+          if (c === '"' && n === '"'){ cur+='"'; i++; }
+          else if (c === '"'){ inQ=false; }
+          else { cur+=c; }
+        } else {
+          if (c === '"'){ inQ=true; }
+          else if (c === ','){ row.push(cur); cur=""; }
+          else if (c === '\n'){ row.push(cur); rows.push(row); row=[]; cur=""; }
+          else if (c === '\r'){ /* skip */ }
+          else { cur+=c; }
+        }
+      }
+      if (cur.length || row.length) { row.push(cur); rows.push(row); }
+      return rows;
+    }
+
+    function mapIssueColor(name){
+      if (!name) return COLORS.default;
+      const k = String(name).toLowerCase().trim();
+      return COLORS[k] || COLORS.default;
+    }
+
+    // === State ===
+    let DATA = [];
+    let FILTERED = [];
+    let TIMER = null;
+    let LAST_SYNC = null;
+    let nextRefreshAt = null;
+
+    // === Fetch + Transform ===
+    async function loadCSV(){
+      try {
+        const res = await fetch(CSV_URL, { cache:"no-store" });
+        console.log("Fetched CSV", res);
+        if (!res.ok) throw new Error(`CSV fetch failed: ${res.status} ${res.statusText}`);
+        const txt = await res.text();
+        console.log("CSV content:", txt.substring(0, 500)); // Debug: show first 500 chars
+        const rows = parseCSV(txt);
+        console.log("Parsed rows:", rows.length, "First row:", rows[0]); // Debug: show row count and header
+        if (!rows.length) return [];
+        const header = rows[0].map(h => h.trim());
+        console.log("Header columns:", header); // Debug: show all column names
+        const idx = (name) => header.findIndex(h => h.toLowerCase() === name.toLowerCase());
+
+        const iKey   = idx("Clave");
+        const iType  = idx("Tipo de Incidencia");
+        const iSum   = idx("Resumen");
+        const iState = idx("Estado");
+        const iAssg  = idx("Persona asignada");
+        const iStart = idx("Start date");
+        const iStartD= idx("Fecha de inicio deducida");
+        const iDue   = idx("Fecha de vencimiento");
+        const iDueD  = idx("Fecha de vencimiento deducida");
+        const iCol   = idx("Issue color");
+        
+        console.log("Column indices:", { iKey, iType, iSum, iState, iAssg, iStart, iStartD, iDue, iDueD, iCol });
+
+        const out = [];
+        for (let r=1; r<rows.length; r++){
+          const row = rows[r];
+          if (!row || !row.length) continue;
+
+          const key   = safe(row[iKey]);
+          const type  = safe(row[iType]);
+          const sum   = safe(row[iSum]);
+          const state = safe(row[iState]);
+          const assg  = safe(row[iAssg]);
+          const startTxt = safe(row[iStartD] || row[iStart]);
+          const dueTxt   = safe(row[iDueD]   || row[iDue]);
+          const start = fixDate(startTxt);
+          const due   = fixDate(dueTxt);
+          const color = mapIssueColor(safe(row[iCol]));
+
+          console.log(`Row ${r}:`, { key, type, sum, state, assg, startTxt, dueTxt, start, due, color }); // Debug each row
+
+          if (!key && !sum) continue;
+          out.push({ key, type, sum, state, assg, start, due, color });
+        }
+        
+        console.log("Processed data:", out); // Debug final processed data
+
+        // Ordenar por due asc
+        out.sort((a,b)=>{
+          const ax = a.due ? a.due.getTime():Infinity;
+          const bx = b.due ? b.due.getTime():Infinity;
+          return ax - bx;
+        });
+        return out;
+      } catch (error) {
+        console.error("Error loading CSV:", error);
+        throw new Error(`No se pudo cargar el CSV. Verifica que la URL sea correcta y que la hoja sea pública. Error: ${error.message}`);
+      }
+    }
+
+    // === Render ===
+    function render(){
+      const board = document.getElementById("board");
+      const empty = document.getElementById("empty");
+      board.innerHTML = "";
+
+      const q = document.getElementById("q").value.trim().toLowerCase();
+      const st = document.getElementById("status").value;
+
+      FILTERED = DATA.filter(it=>{
+        const matchQ = !q || [it.key, it.sum, it.state, it.assg].some(v => (v||"").toLowerCase().includes(q));
+        const matchS = !st || (it.state||"") === st;
+        return matchQ && matchS;
+      });
+
+      if (!FILTERED.length){
+        empty.style.display = "block";
+        return;
+      } else empty.style.display = "none";
+
+      const now = Date.now();
+
+      FILTERED.forEach(it=>{
+        const startMs = it.start ? it.start.getTime() : now;
+        const dueMs   = it.due ? it.due.getTime() : now + 1;
+        const span = Math.max(1, dueMs - startMs);
+        const doneSpan = clamp(now - startMs, 0, span);
+        const pct = Math.round(100 * doneSpan / span);
+        const daysLeft = Math.ceil((dueMs - now) / 86400000);
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="row1">
+            <div class="left">
+              <span class="dot" style="background:${it.color}"></span>
+              <span class="key">${it.key || "—"}</span>
+              <span class="sum" title="${it.sum || ""}">· ${it.sum || ""}</span>
+            </div>
+            <div class="badges">
+              ${it.state ? `<span class="badge">${it.state}</span>` : ""}
+              ${it.assg ? `<span class="badge">👤 ${it.assg}</span>` : ""}
+              ${it.type ? `<span class="badge">${it.type}</span>` : ""}
+              <span class="badge">⏳ ${isFinite(pct) ? pct : 0}%</span>
+              ${Number.isFinite(daysLeft) ? `<span class="badge">📅 ${daysLeft >= 0 ? daysLeft+'d restantes' : Math.abs(daysLeft)+'d de atraso'}</span>` : ""}
+            </div>
+          </div>
+          <div class="row2">
+            <div class="bar">
+              <div class="fill" style="width:${isFinite(pct) ? pct : 0}%;"></div>
+              ${(it.start && it.due) ? `<div class="today" style="left:${clamp(100*(now - startMs)/span,0,100)}%;"></div>` : ""}
+            </div>
+          </div>
+          <div class="row3">
+            <div class="dates">
+              <span class="pill">Inicio: ${fmtDate(it.start)}</span>
+              <span class="pill">Vence: ${fmtDate(it.due)}</span>
+            </div>
+            <div class="count" data-key="${it.key}">—</div>
+          </div>
+        `;
+        board.appendChild(card);
+      });
+
+      if (TIMER) clearInterval(TIMER);
+      TIMER = setInterval(updateCountdowns, 1000);
+      updateCountdowns();
+    }
+
+    function updateCountdowns(){
+      const now = Date.now();
+      FILTERED.forEach(it=>{
+        const dueMs = it.due ? it.due.getTime() : now;
+        const delta = dueMs - now;
+        const el = document.querySelector(`.count[data-key="${CSS.escape(it.key)}"]`);
+        if (!el) return;
+        const p = msToParts(delta);
+        el.textContent = partsToStr(p);
+        el.classList.toggle("late", delta < 0);
+        el.classList.toggle("warn", delta >= 0 && delta <= 3*86400000);
+      });
+      const stamp = document.getElementById("stamp");
+      if (LAST_SYNC) {
+        const left = nextRefreshAt ? Math.max(0, Math.round((nextRefreshAt - Date.now())/1000)) : REFRESH_SEC;
+        stamp.textContent = `Actualizado: ${LAST_SYNC.toLocaleString("es-MX", { timeZone: TIMEZONE })} · Próximo refresh en ~${left}s`;
+      }
+    }
+
+    async function bootstrap(){
+      try{
+        DATA = await loadCSV();
+        LAST_SYNC = new Date();
+        nextRefreshAt = Date.now() + REFRESH_SEC*1000;
+        render();
+      }catch(e){
+        console.error(e);
+        const empty = document.getElementById("empty");
+        empty.style.display = "block";
+        empty.textContent = "No se pudo cargar el CSV público.";
+      }finally{
+        setTimeout(bootstrap, REFRESH_SEC*1000);
+      }
+    }
+
+    document.getElementById("q").addEventListener("input", render);
+    document.getElementById("status").addEventListener("change", render);
+
+    bootstrap();
+  </script>
+</body>
+</html>
