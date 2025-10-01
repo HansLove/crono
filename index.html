@@ -44,14 +44,14 @@
     .container{
       max-width:1400px;
       margin:0 auto;
-      padding:30px 20px;
+      padding:12px 20px 30px 20px;
     }
     
     /* Header */
     header{
       text-align:center;
-      margin-bottom:40px;
-      padding-bottom:30px;
+      margin-bottom:32px;
+      padding-bottom:24px;
       border-bottom:1px solid var(--border);
     }
     
@@ -164,17 +164,19 @@
       color:var(--warn);
     }
     
-    /* Task Cards */
+    /* Task Cards - Block Layout */
     .tasks{
       display:grid;
       gap:16px;
+      grid-template-columns:1fr;
     }
     
     .task-card{
       background:var(--bg-panel);
       border:1px solid var(--border);
+      border-left:4px solid var(--accent);
       border-radius:16px;
-      padding:20px;
+      padding:24px;
       transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position:relative;
       overflow:hidden;
@@ -186,20 +188,214 @@
       top:0;
       left:0;
       right:0;
-      height:4px;
-      background:var(--accent);
+      bottom:0;
+      background:radial-gradient(circle at top right, rgba(0,212,170,0.05), transparent 70%);
       opacity:0;
       transition:opacity 0.3s;
+      pointer-events:none;
     }
     
     .task-card:hover{
-      border-color:var(--accent);
-      transform:translateY(-4px);
-      box-shadow:0 20px 60px rgba(0,0,0,0.4);
+      border-left-width:6px;
+      transform:translateX(4px);
+      box-shadow:0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px var(--accent);
     }
     
     .task-card:hover::before{
       opacity:1;
+    }
+    
+    /* Compact Header */
+    .compact-header{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:24px;
+      margin-bottom:20px;
+    }
+    
+    .compact-left{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-width:0;
+    }
+    
+    .compact-key{
+      font-size:12px;
+      font-weight:800;
+      color:var(--text-dim);
+      background:#1a1a1a;
+      padding:6px 14px;
+      border-radius:8px;
+      display:inline-block;
+      width:fit-content;
+      letter-spacing:1px;
+      text-transform:uppercase;
+    }
+    
+    .compact-title{
+      font-size:20px;
+      font-weight:700;
+      color:var(--text);
+      line-height:1.4;
+      word-break:break-word;
+    }
+    
+    .compact-meta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    
+    .compact-right{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      align-items:flex-end;
+      text-align:right;
+    }
+    
+    .compact-timer{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    
+    .compact-cost{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      background:radial-gradient(ellipse at center, rgba(0,212,170,0.1), transparent);
+      padding:12px 16px;
+      border-radius:12px;
+      border:1px solid rgba(0,212,170,0.2);
+    }
+    
+    .compact-invoice-btn{
+      background:var(--accent);
+      color:#000;
+      border:none;
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      font-size:18px;
+      cursor:pointer;
+      transition:all 0.2s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+    
+    .compact-invoice-btn:hover{
+      background:#00ffcc;
+      transform:scale(1.1) rotate(5deg);
+      box-shadow:0 6px 20px rgba(0,212,170,0.4);
+    }
+    
+    .compact-invoice-btn:active{
+      transform:scale(0.95);
+    }
+    
+    .compact-calendar-btn{
+      background:var(--blue);
+      color:#fff;
+      border:none;
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      font-size:18px;
+      cursor:pointer;
+      transition:all 0.2s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+    
+    .compact-calendar-btn:hover{
+      background:#5fadff;
+      transform:scale(1.1) rotate(-5deg);
+      box-shadow:0 6px 20px rgba(74,158,255,0.4);
+    }
+    
+    .compact-calendar-btn:active{
+      transform:scale(0.95);
+    }
+    
+    .compact-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    
+    /* Compact Footer */
+    .compact-footer{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:20px;
+      align-items:center;
+      padding-top:16px;
+      border-top:1px solid var(--border);
+    }
+    
+    .compact-progress{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex:1;
+    }
+    
+    .compact-progress .progress-bar{
+      flex:1;
+      height:10px;
+      background:#1a1a1a;
+      border-radius:999px;
+      overflow:hidden;
+      position:relative;
+    }
+    
+    .compact-progress .progress-fill{
+      height:100%;
+      border-radius:999px;
+      transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      position:relative;
+    }
+    
+    .compact-progress .progress-fill::after{
+      content:'';
+      position:absolute;
+      top:0;
+      right:0;
+      bottom:0;
+      width:60px;
+      background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 100%);
+      animation:shimmer 2s infinite;
+    }
+    
+    .progress-text{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-dim);
+      min-width:45px;
+      text-align:right;
+      font-variant-numeric:tabular-nums;
+    }
+    
+    .compact-dates{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    
+    .date-item{
+      font-size:12px;
+      color:var(--text-dim);
+      background:#1a1a1a;
+      padding:6px 12px;
+      border-radius:8px;
+      white-space:nowrap;
     }
     
     /* Task Header */
@@ -674,48 +870,170 @@
       justify-content:center;
     }
     
-    /* Responsive */
+    /* Responsive - Mobile: 1 task per row */
     @media (max-width:768px){
+      .container{
+        padding:8px 16px 20px 16px;
+      }
+      
+      header{
+        margin-bottom:24px;
+        padding-bottom:20px;
+      }
+      
       h1{
-        font-size:36px;
+        font-size:32px;
+        letter-spacing:-1px;
+      }
+      
+      .subtitle{
+        font-size:14px;
+      }
+      
+      /* Tasks: Always 1 per row on mobile */
+      .tasks{
+        gap:12px;
+        grid-template-columns:1fr;
       }
       
       .task-card{
         padding:20px;
+        border-radius:12px;
       }
       
-      .timer-section{
-        flex-direction:column;
+      /* Compact Header: Stack on mobile */
+      .compact-header{
+        grid-template-columns:1fr;
+        gap:16px;
+      }
+      
+      .compact-right{
         align-items:flex-start;
+        text-align:left;
+        width:100%;
+      }
+      
+      .compact-title{
+        font-size:18px;
+      }
+      
+      .compact-timer{
+        width:100%;
       }
       
       .timer-display{
+        font-size:24px;
+      }
+      
+      .compact-cost{
+        width:100%;
+        justify-content:space-between;
+        padding:10px 14px;
+      }
+      
+      .gas-amount{
+        font-size:22px;
+      }
+      
+      .compact-calendar-btn,
+      .compact-invoice-btn{
+        width:36px;
+        height:36px;
+        font-size:16px;
+      }
+      
+      /* Compact Footer: Stack on mobile */
+      .compact-footer{
+        grid-template-columns:1fr;
+        gap:16px;
+      }
+      
+      .compact-dates{
+        justify-content:flex-start;
+      }
+      
+      .date-item{
+        font-size:11px;
+        padding:5px 10px;
+      }
+      
+      /* Summary Grid */
+      .summary-grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:12px;
+      }
+      
+      .summary-item{
+        padding:14px;
+      }
+      
+      .summary-value{
+        font-size:20px;
+      }
+      
+      .summary-label{
+        font-size:10px;
+      }
+      
+      /* Modal */
+      .modal-content{
+        padding:30px 20px;
+        border-radius:16px;
+      }
+      
+      .discount-amount{
         font-size:28px;
       }
       
-      .timer-part-value{
+      .modal-actions{
+        flex-direction:column;
+      }
+      
+      .modal-actions .btn{
+        width:100%;
+      }
+      
+      /* Controls */
+      .controls{
+        gap:8px;
+      }
+      
+      .input, .select{
+        min-width:100%;
+        padding:12px 16px;
+        font-size:13px;
+      }
+    }
+    
+    /* Extra small devices */
+    @media (max-width:480px){
+      h1{
+        font-size:28px;
+      }
+      
+      .task-card{
+        padding:16px;
+      }
+      
+      .compact-title{
+        font-size:16px;
+      }
+      
+      .timer-display{
         font-size:20px;
       }
       
       .gas-amount{
-        font-size:24px;
+        font-size:20px;
       }
       
-      .gas-section{
-        flex-direction:column;
-        align-items:stretch;
+      .summary-grid{
+        grid-template-columns:1fr;
       }
       
-      .invoice-btn{
-        width:100%;
-      }
-      
-      .task-title{
-        font-size:16px;
-      }
-      
-      .timer-main{
-        min-width:100%;
+      .compact-key{
+        font-size:11px;
+        padding:5px 10px;
       }
     }
   </style>
@@ -723,10 +1041,6 @@
 <body>
   <div class="container">
     <header>
-      <div class="logo">crono</div>
-      <h1>project timeline</h1>
-      <p class="subtitle">live tracking · real-time updates</p>
-      
       <div class="controls">
         <input class="input" id="q" placeholder="🔍 Filter tasks..." />
         <select class="select" id="status">
@@ -929,6 +1243,56 @@
       return "status-todo";
     }
 
+    // === Calendar Event Generation ===
+    function formatGoogleDate(date){
+      if(!date) return "";
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      const hours = String(date.getUTCHours()).padStart(2, "0");
+      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+      const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+      return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+    }
+    
+    function createCalendarEvent(task){
+      if(!task.due){
+        alert("This task doesn't have a due date set.");
+        return;
+      }
+      
+      const dueDate = new Date(task.due);
+      
+      // Set due date to end of day (23:59)
+      dueDate.setHours(23, 59, 0, 0);
+      
+      // Create all-day event starting at the due date
+      const startDate = new Date(dueDate);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const title = `[${task.key}] ${task.sum}`;
+      const description = `Task: ${task.key}
+Status: ${task.state}${task.assg ? `
+Assigned to: ${task.assg}` : ''}
+Cost: $${task.gas.toLocaleString()}
+
+⏰ Project Timeline Deadline - Don't miss it!`;
+      
+      const location = "Project Timeline";
+      
+      // Build Google Calendar URL
+      const googleCalendarUrl = new URL("https://calendar.google.com/calendar/render");
+      googleCalendarUrl.searchParams.append("action", "TEMPLATE");
+      googleCalendarUrl.searchParams.append("text", title);
+      googleCalendarUrl.searchParams.append("dates", `${formatGoogleDate(startDate)}/${formatGoogleDate(dueDate)}`);
+      googleCalendarUrl.searchParams.append("details", description);
+      googleCalendarUrl.searchParams.append("location", location);
+      googleCalendarUrl.searchParams.append("trp", "false");
+      
+      // Open Google Calendar in new tab
+      window.open(googleCalendarUrl.toString(), "_blank");
+    }
+    
     // === Invoice Modal ===
     function openInvoiceModal(task){
       currentInvoiceTask = task;
@@ -1096,76 +1460,45 @@
         card.style.borderTopColor = it.color;
         
         card.innerHTML = `
-          <div class="task-header">
-            <div class="task-info">
-              <div class="task-key">${it.key || "—"}</div>
-              <div class="task-title">${it.sum || "Untitled Task"}</div>
-              <div class="task-meta">
+          <div class="compact-header">
+            <div class="compact-left">
+              <div class="compact-key">${it.key || "—"}</div>
+              <div class="compact-title">${it.sum || "Untitled Task"}</div>
+              <div class="compact-meta">
                 ${it.state ? `<span class="status-badge ${getStatusClass(it.state)}">${it.state}</span>` : ""}
                 ${it.assg ? `<span class="meta-item">👤 ${it.assg}</span>` : ""}
-                ${it.type ? `<span class="meta-item">📋 ${it.type}</span>` : ""}
+              </div>
+            </div>
+            <div class="compact-right">
+              <div class="compact-timer">
+                <div class="timer-display ${timerClass}" data-key="${it.key}">
+                  ${partsToStr(parts)}
+                </div>
+              </div>
+              <div class="compact-cost">
+                <div class="gas-amount">$${it.gas.toLocaleString()}</div>
+                <div class="compact-actions">
+                  <button class="compact-calendar-btn" onclick='createCalendarEvent(${JSON.stringify(it)})' title="Add to Calendar">
+                    📅
+                  </button>
+                  <button class="compact-invoice-btn" onclick='openInvoiceModal(${JSON.stringify(it)})' title="Request Invoice">
+                    🧾
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="timer-section">
-            <div class="timer-main">
-              <div class="timer-label">⏱️ time remaining</div>
-              <div class="timer-display ${timerClass}" data-key="${it.key}">
-                ${partsToStr(parts)}
+          
+          <div class="compact-footer">
+            <div class="compact-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${isFinite(pct) ? pct : 0}%; background:linear-gradient(90deg, ${it.color} 0%, ${it.color}88 100%);"></div>
               </div>
+              <span class="progress-text">${isFinite(pct) ? pct : 0}%</span>
             </div>
-            <div class="timer-parts">
-              <div class="timer-part">
-                <span class="timer-part-value" data-key="${it.key}-d">${Math.abs(parts.d)}</span>
-                <span class="timer-part-label">d</span>
-              </div>
-              <div class="timer-part">
-                <span class="timer-part-value" data-key="${it.key}-h">${String(Math.abs(parts.h)).padStart(2,"0")}</span>
-                <span class="timer-part-label">h</span>
-              </div>
-              <div class="timer-part">
-                <span class="timer-part-value" data-key="${it.key}-m">${String(Math.abs(parts.n)).padStart(2,"0")}</span>
-                <span class="timer-part-label">m</span>
-              </div>
-              <div class="timer-part">
-                <span class="timer-part-value" data-key="${it.key}-s">${String(Math.abs(parts.s)).padStart(2,"0")}</span>
-                <span class="timer-part-label">s</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="gas-section">
-            <div class="gas-info">
-              <div class="gas-label">
-                ⛽ project cost
-                <span class="discount-badge">-5% with invoice</span>
-              </div>
-              <div class="gas-amount">$${it.gas.toLocaleString()}</div>
-            </div>
-            <button class="invoice-btn" onclick='openInvoiceModal(${JSON.stringify(it)})'>
-              🧾 Request Invoice
-            </button>
-          </div>
-
-          <div class="progress-section">
-            <div class="progress-header">
-              <span>Progress</span>
-              <span>${isFinite(pct) ? pct : 0}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width:${isFinite(pct) ? pct : 0}%; background:linear-gradient(90deg, ${it.color} 0%, ${it.color}88 100%);"></div>
-            </div>
-          </div>
-
-            <div class="dates">
-            <div class="date-pill">
-              <span>📅 Start:</span>
-              <span class="date-value">${fmtDate(it.start)}</span>
-            </div>
-            <div class="date-pill">
-              <span>🎯 Due:</span>
-              <span class="date-value">${fmtDate(it.due)}</span>
+            <div class="compact-dates">
+              <span class="date-item">📅 ${fmtDate(it.start)}</span>
+              <span class="date-item">🎯 ${fmtDate(it.due)}</span>
             </div>
           </div>
         `;
