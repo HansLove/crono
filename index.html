@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Schedule — Crono (Google Sheets)</title>
+  <title>Tasks Schedule</title>
   <style>
     :root{
       --bg:#0b0b0c; --panel:#121316; --muted:#8b8d92; --text:#e9eaec;
@@ -33,38 +33,48 @@
     .row1{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between}
     .left{display:flex; align-items:center; gap:10px; min-width:0}
     .dot{width:10px; height:10px; border-radius:50%}
-    .key{font-weight:600; color:#fff; letter-spacing:.2px}
-    .sum{color:#d7d8db; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:520px}
+    .key{font-weight:500; color:#8b8d92; letter-spacing:.2px; font-size:11px; background:#1b1c20; padding:2px 6px; border-radius:4px}
+    .sum{color:#e9eaec; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:520px; font-size:15px; font-weight:500}
     .badges{display:flex; gap:6px; flex-wrap:wrap}
     .badge{
       border:1px solid var(--line); color:var(--muted); padding:4px 8px; border-radius:999px; font-size:11px
     }
     .row2{margin-top:12px}
     .bar{
-      position:relative; height:10px; background:#0d0e11; border:1px solid var(--line);
-      border-radius:999px; overflow:hidden;
+      position:relative; height:20px; background:#0d0e11; border:1px solid var(--line);
+      border-radius:999px; overflow:hidden; display:flex; align-items:center; justify-content:center;
     }
     .fill{position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg, #5865f2, #38bdf8);
       width:0%; transition:width .6s ease; }
     .today{position:absolute; top:-6px; bottom:-6px; width:2px; background:#ffffff20}
+    .bar-text{position:absolute; color:#fff; font-weight:700; font-size:12px; z-index:2; text-shadow:0 0 3px rgba(0,0,0,0.8)}
     .row3{display:flex; align-items:center; justify-content:space-between; color:var(--muted); margin-top:8px; font-size:12px}
     .dates{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
-    .count{font-feature-settings: "tnum" 1, "opsz" 144; color:#fff; font-weight:600}
+    .count{font-feature-settings: "tnum" 1, "opsz" 144; color:#fff; font-weight:700; font-size:16px}
     .pill{
       border:1px dashed #2a2c33; color:#aab; padding:3px 8px; border-radius:999px; font-size:11px
     }
     .warn{color:#ffd166}
     .late{color:#ff7b7b}
+    .gas-cost{font-weight:700; color:#34d399; font-size:18px; background:#0f2b1f; padding:4px 8px; border-radius:6px; border:1px solid #34d39940}
+    .calendar-btn{background:#5865f2; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.2s}
+    .calendar-btn:hover{background:#4752c4; transform:translateY(-1px)}
     footer{margin-top:18px; color:var(--muted); font-size:11px}
     .empty{color:var(--muted); text-align:center; padding:40px 0; border:1px dashed var(--line); border-radius:12px}
-    @media (max-width:700px){ .sum{max-width:260px} }
+    @media (max-width:700px){ 
+      .sum{max-width:260px}
+      .gas-cost{font-size:16px; padding:3px 6px}
+      .calendar-btn{font-size:10px; padding:4px 8px}
+      .badges{flex-direction:column; align-items:flex-end; gap:4px}
+      .badges .gas-cost{order:-1; margin-bottom:4px}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div>
-        <h1>Schedule — Epics (Google Sheets)</h1>
+        <h1>Schedule — E</h1>
         <div class="sub">Public view (read-only) · Live updates remaining time</div>
       </div>
       <div class="controls">
@@ -96,22 +106,46 @@
       {
         key: "LHR-70",
         type: "Epic",
-        sum: "Leads generation",
-        state: "To Do",
+        sum: "Automatic change of device. Leads generation",
+        state: "Por Hacer",
         assg: "",
         start: new Date("2025-09-06"),
         due: new Date("2025-09-30"),
-        color: "#34d399"
+        color: "#34d399",
+        gas: 3232
       },
       {
         key: "LHR-71",
         type: "Epic", 
-        sum: "Testing 100 numbers with Broadcast tool",
-        state: "To Do",
+        sum: "250 people Broadcast test",
+        state: "Por Hacer",
+        assg: "",
+        start: new Date("2025-09-28"),
+        due: new Date("2025-10-06"),
+        color: "#14b8a6",
+        gas: 4324
+      },
+      {
+        key: "LHR-72",
+        type: "Epic",
+        sum: "Affill new payment channel integration",
+        state: "Por Hacer",
         assg: "",
         start: new Date("2025-09-19"),
-        due: new Date("2025-10-08"),
-        color: "#a78bfa"
+        due: new Date("2025-10-02"),
+        color: "#a78bfa",
+        gas: 5454
+      },
+      {
+        key: "LHR-73",
+        type: "Epic",
+        sum: "Lich Coding new version for Fintech and budgets",
+        state: "Por Hacer",
+        assg: "",
+        start: new Date("2025-10-01"),
+        due: new Date("2025-10-14"),
+        color: "#a78bfa",
+        gas: 354
       }
     ];
 
@@ -135,6 +169,46 @@
     };
     const partsToStr = (p) => `${p.neg ? "-" : ""}${String(p.d).padStart(2,"0")}d:${String(p.h).padStart(2,"0")}h:${String(p.n).padStart(2,"0")}m:${String(p.s).padStart(2,"0")}s`;
     const safe = (v) => (v || "").trim();
+    
+    // Calendar integration
+    const addToCalendar = (item) => {
+      const startDate = item.start ? item.start.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      const endDate = item.due ? item.due.toISOString().split('T')[0] : startDate;
+      const title = `${item.key} - ${item.sum}`;
+      const details = `Budget: $${item.gas.toLocaleString()}\nStatus: ${item.state}\nAssignee: ${item.assg || 'Unassigned'}`;
+      
+      // Create Google Calendar URL
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}`;
+      
+      // Create ICS file for other calendar apps
+      const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Task Scheduler//EN
+BEGIN:VEVENT
+UID:${item.key}-${Date.now()}@crono.local
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTSTART:${startDate.replace(/-/g, '')}
+DTEND:${endDate.replace(/-/g, '')}
+SUMMARY:${title}
+DESCRIPTION:${details.replace(/\n/g, '\\n')}
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`;
+      
+      // Try to open Google Calendar first
+      window.open(googleUrl, '_blank');
+      
+      // Also provide download option for ICS
+      const blob = new Blob([icsContent], { type: 'text/calendar' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${item.key}-calendar.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
 
     // Dates from CSV come as "YYYY/MM/DD"
     const fixDate = (s) => {
@@ -216,6 +290,7 @@
         const iDue   = idx("Fecha de vencimiento");
         const iDueD  = idx("Fecha de vencimiento deducida");
         const iCol   = idx("Issue color");
+        const iGas   = idx("Gas");
 
         const out = [];
         for (let r=1; r<rows.length; r++){
@@ -232,9 +307,10 @@
           const start = fixDate(startTxt);
           const due   = fixDate(dueTxt);
           const color = mapIssueColor(safe(row[iCol]));
+          const gas   = parseFloat(safe(row[iGas])) || 0;
 
           if (!key && !sum) continue;
-          out.push({ key, type, sum, state, assg, start, due, color });
+          out.push({ key, type, sum, state, assg, start, due, color, gas });
         }
 
         // Sort by due date ascending
@@ -277,8 +353,7 @@
         const startMs = it.start ? it.start.getTime() : now;
         const dueMs   = it.due ? it.due.getTime() : now + 1;
         const span = Math.max(1, dueMs - startMs);
-        const doneSpan = clamp(now - startMs, 0, span);
-        const pct = Math.round(100 * doneSpan / span);
+        const pct = Math.round(100 * clamp(now - startMs, 0, span) / span);
         const daysLeft = Math.ceil((dueMs - now) / 86400000);
 
         const card = document.createElement("div");
@@ -291,16 +366,18 @@
               <span class="sum" title="${it.sum || ""}">· ${it.sum || ""}</span>
             </div>
             <div class="badges">
+              <span class="gas-cost">$${it.gas.toLocaleString()}</span>
               ${it.state ? `<span class="badge">${it.state}</span>` : ""}
               ${it.assg ? `<span class="badge">👤 ${it.assg}</span>` : ""}
               ${it.type ? `<span class="badge">${it.type}</span>` : ""}
-              <span class="badge">⏳ ${isFinite(pct) ? pct : 0}%</span>
               ${Number.isFinite(daysLeft) ? `<span class="badge">📅 ${daysLeft >= 0 ? daysLeft+'d remaining' : Math.abs(daysLeft)+'d overdue'}</span>` : ""}
+              <button class="calendar-btn" onclick="addToCalendar(${JSON.stringify(it).replace(/"/g, '&quot;')})">📅 Add to Calendar</button>
             </div>
           </div>
           <div class="row2">
             <div class="bar">
               <div class="fill" style="width:${isFinite(pct) ? pct : 0}%; background:${it.color};"></div>
+              <div class="bar-text">${isFinite(pct) ? pct : 0}%</div>
               ${(it.start && it.due) ? `<div class="today" style="left:${clamp(100*(now - startMs)/span,0,100)}%;"></div>` : ""}
             </div>
           </div>
