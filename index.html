@@ -3,84 +3,666 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tasks Schedule</title>
+  <title>crono · project timeline</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    
     :root{
-      --bg:#0b0b0c; --panel:#121316; --muted:#8b8d92; --text:#e9eaec;
-      --line:#1b1c20; --gray:#9ca3af;
-      --purple:#a78bfa; --green:#34d399; --orange:#f59e0b; --yellow:#facc15; --teal:#14b8a6; --blue:#60a5fa; --default:#9ca3af;
+      --bg:#0a0a0a;
+      --bg-panel:#111111;
+      --border:#222222;
+      --text:#e0e0e0;
+      --text-dim:#888888;
+      --accent:#00d4aa;
+      --accent-dim:#00d4aa20;
+      --warn:#ffd166;
+      --critical:#ff6b6b;
+      --blue:#4a9eff;
+      --purple:#a78bfa;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+    
+    html,body{
+      height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Inter', -apple-system, system-ui, sans-serif;
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
+    }
+    
     body{
-      margin:0; background: radial-gradient(1200px 600px at 80% -10%, #1a1b20 0%, #0b0b0c 45%, #0b0b0c 100%);
-      color:var(--text); font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
+      background:radial-gradient(ellipse 120% 80% at 50% -20%, #151515 0%, #0a0a0a 60%);
+      background-attachment:fixed;
     }
-    .wrap{max-width:1100px; margin:40px auto; padding:0 16px}
-    header{display:flex; gap:12px; align-items:end; justify-content:space-between; margin-bottom:16px}
-    h1{margin:0; font-size:22px; letter-spacing:.2px}
-    .sub{color:var(--muted); font-size:12px}
-    .controls{display:flex; gap:8px; flex-wrap:wrap}
+    
+    .container{
+      max-width:1400px;
+      margin:0 auto;
+      padding:40px 20px;
+    }
+    
+    /* Header */
+    header{
+      text-align:center;
+      margin-bottom:60px;
+      padding-bottom:40px;
+      border-bottom:1px solid var(--border);
+    }
+    
+    .logo{
+      font-size:16px;
+      font-weight:600;
+      letter-spacing:3px;
+      text-transform:lowercase;
+      color:var(--text-dim);
+      margin-bottom:20px;
+    }
+    
+    h1{
+      font-size:56px;
+      font-weight:900;
+      letter-spacing:-2px;
+      margin-bottom:12px;
+      background:linear-gradient(135deg, var(--text) 0%, var(--text-dim) 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    
+    .subtitle{
+      font-size:18px;
+      color:var(--text-dim);
+      font-weight:400;
+    }
+    
+    /* Controls */
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      margin:30px 0;
+      flex-wrap:wrap;
+    }
+    
     .input, .select{
-      background:#0f1013; border:1px solid var(--line); color:var(--text);
-      padding:10px 12px; border-radius:12px; outline:none; min-width:220px;
+      background:var(--bg-panel);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:14px 20px;
+      border-radius:12px;
+      outline:none;
+      font-size:14px;
+      font-family:inherit;
+      min-width:250px;
+      transition:all 0.2s;
     }
-    .board{display:grid; gap:12px}
-    .card{
-      background:linear-gradient(180deg, #14161a 0%, #0f1014 100%); border:1px solid var(--line);
-      border-radius:16px; padding:14px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    
+    .input:focus, .select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px var(--accent-dim);
     }
-    .row1{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between}
-    .left{display:flex; align-items:center; gap:10px; min-width:0}
-    .dot{width:10px; height:10px; border-radius:50%}
-    .key{font-weight:500; color:#8b8d92; letter-spacing:.2px; font-size:11px; background:#1b1c20; padding:2px 6px; border-radius:4px}
-    .sum{color:#e9eaec; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:520px; font-size:15px; font-weight:500}
-    .badges{display:flex; gap:6px; flex-wrap:wrap}
-    .badge{
-      border:1px solid var(--line); color:var(--muted); padding:4px 8px; border-radius:999px; font-size:11px
+    
+    .input::placeholder{
+      color:var(--text-dim);
     }
-    .row2{margin-top:12px}
-    .bar{
-      position:relative; height:20px; background:#0d0e11; border:1px solid var(--line);
-      border-radius:999px; overflow:hidden; display:flex; align-items:center; justify-content:center;
+    
+    /* Task Cards */
+    .tasks{
+      display:grid;
+      gap:24px;
     }
-    .fill{position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg, #5865f2, #38bdf8);
-      width:0%; transition:width .6s ease; }
-    .today{position:absolute; top:-6px; bottom:-6px; width:2px; background:#ffffff20}
-    .bar-text{position:absolute; color:#fff; font-weight:700; font-size:12px; z-index:2; text-shadow:0 0 3px rgba(0,0,0,0.8)}
-    .row3{display:flex; align-items:center; justify-content:space-between; color:var(--muted); margin-top:8px; font-size:12px}
-    .dates{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
-    .count{font-feature-settings: "tnum" 1, "opsz" 144; color:#fff; font-weight:700; font-size:16px}
-    .pill{
-      border:1px dashed #2a2c33; color:#aab; padding:3px 8px; border-radius:999px; font-size:11px
+    
+    .task-card{
+      background:var(--bg-panel);
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:40px;
+      transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position:relative;
+      overflow:hidden;
     }
-    .warn{color:#ffd166}
-    .late{color:#ff7b7b}
-    .gas-cost{font-weight:700; color:#34d399; font-size:18px; background:#0f2b1f; padding:4px 8px; border-radius:6px; border:1px solid #34d39940}
-    .calendar-btn{background:#5865f2; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.2s}
-    .calendar-btn:hover{background:#4752c4; transform:translateY(-1px)}
-    footer{margin-top:18px; color:var(--muted); font-size:11px}
-    .empty{color:var(--muted); text-align:center; padding:40px 0; border:1px dashed var(--line); border-radius:12px}
-    @media (max-width:700px){ 
-      .sum{max-width:260px}
-      .gas-cost{font-size:16px; padding:3px 6px}
-      .calendar-btn{font-size:10px; padding:4px 8px}
-      .badges{flex-direction:column; align-items:flex-end; gap:4px}
-      .badges .gas-cost{order:-1; margin-bottom:4px}
+    
+    .task-card::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:4px;
+      background:var(--accent);
+      opacity:0;
+      transition:opacity 0.3s;
+    }
+    
+    .task-card:hover{
+      border-color:var(--accent);
+      transform:translateY(-4px);
+      box-shadow:0 20px 60px rgba(0,0,0,0.4);
+    }
+    
+    .task-card:hover::before{
+      opacity:1;
+    }
+    
+    /* Task Header */
+    .task-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:30px;
+      gap:20px;
+      flex-wrap:wrap;
+    }
+    
+    .task-info{
+      flex:1;
+      min-width:0;
+    }
+    
+    .task-key{
+      display:inline-block;
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-dim);
+      background:#1a1a1a;
+      padding:6px 12px;
+      border-radius:6px;
+      margin-bottom:12px;
+      letter-spacing:0.5px;
+    }
+    
+    .task-title{
+      font-size:24px;
+      font-weight:700;
+      color:var(--text);
+      line-height:1.3;
+      margin-bottom:16px;
+    }
+    
+    .task-meta{
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    
+    .meta-item{
+      font-size:13px;
+      color:var(--text-dim);
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    
+    /* HUGE Timer - The star of the show! */
+    .timer-section{
+      text-align:center;
+      margin:40px 0;
+      padding:40px;
+      background:radial-gradient(ellipse at center, #151515 0%, var(--bg-panel) 60%);
+      border-radius:20px;
+      border:1px solid var(--border);
+    }
+    
+    .timer-label{
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      color:var(--text-dim);
+      margin-bottom:16px;
+      font-weight:600;
+    }
+    
+    .timer-display{
+      font-size:72px;
+      font-weight:900;
+      letter-spacing:-2px;
+      margin-bottom:8px;
+      font-variant-numeric:tabular-nums;
+      transition:all 0.3s;
+    }
+    
+    .timer-display.normal{
+      color:var(--accent);
+      text-shadow:0 0 40px var(--accent-dim);
+    }
+    
+    .timer-display.warning{
+      color:var(--warn);
+      text-shadow:0 0 40px rgba(255, 209, 102, 0.3);
+    }
+    
+    .timer-display.critical{
+      color:var(--critical);
+      text-shadow:0 0 40px rgba(255, 107, 107, 0.3);
+      animation:pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse{
+      0%, 100%{ opacity:1; transform:scale(1); }
+      50%{ opacity:0.8; transform:scale(0.98); }
+    }
+    
+    .timer-parts{
+      display:flex;
+      justify-content:center;
+      gap:24px;
+      margin-top:20px;
+      flex-wrap:wrap;
+    }
+    
+    .timer-part{
+      text-align:center;
+    }
+    
+    .timer-part-value{
+      font-size:48px;
+      font-weight:800;
+      color:var(--text);
+      display:block;
+      font-variant-numeric:tabular-nums;
+    }
+    
+    .timer-part-label{
+      font-size:12px;
+      color:var(--text-dim);
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-top:4px;
+    }
+    
+    /* Gas Cost - Super Prominent */
+    .gas-section{
+      background:#0a1f1a;
+      border:2px solid var(--accent);
+      border-radius:16px;
+      padding:32px;
+      margin:30px 0;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+      flex-wrap:wrap;
+      position:relative;
+      overflow:hidden;
+    }
+    
+    .gas-section::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:linear-gradient(135deg, var(--accent-dim) 0%, transparent 50%);
+      pointer-events:none;
+    }
+    
+    .gas-info{
+      position:relative;
+      z-index:1;
+    }
+    
+    .gas-label{
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      color:var(--accent);
+      margin-bottom:8px;
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    
+    .gas-amount{
+      font-size:56px;
+      font-weight:900;
+      color:var(--accent);
+      letter-spacing:-2px;
+      font-variant-numeric:tabular-nums;
+    }
+    
+    .discount-badge{
+      background:var(--accent);
+      color:#000;
+      padding:4px 12px;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:700;
+      margin-left:12px;
+    }
+    
+    .invoice-btn{
+      background:var(--accent);
+      color:#000;
+      border:none;
+      padding:16px 32px;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      transition:all 0.2s;
+      font-family:inherit;
+      position:relative;
+      z-index:1;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+    
+    .invoice-btn:hover{
+      background:#00ffcc;
+      transform:translateY(-2px);
+      box-shadow:0 10px 30px rgba(0, 212, 170, 0.4);
+    }
+    
+    .invoice-btn:active{
+      transform:translateY(0);
+    }
+    
+    /* Progress Bar */
+    .progress-section{
+      margin:30px 0;
+    }
+    
+    .progress-header{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:12px;
+      font-size:13px;
+      color:var(--text-dim);
+    }
+    
+    .progress-bar{
+      height:8px;
+      background:#1a1a1a;
+      border-radius:999px;
+      overflow:hidden;
+      position:relative;
+    }
+    
+    .progress-fill{
+      height:100%;
+      background:linear-gradient(90deg, var(--accent) 0%, var(--blue) 100%);
+      border-radius:999px;
+      transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      position:relative;
+    }
+    
+    .progress-fill::after{
+      content:'';
+      position:absolute;
+      top:0;
+      right:0;
+      bottom:0;
+      width:100px;
+      background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 100%);
+      animation:shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer{
+      0%{ transform:translateX(-100%); }
+      100%{ transform:translateX(100%); }
+    }
+    
+    /* Date Pills */
+    .dates{
+      display:flex;
+      gap:12px;
+      margin-top:20px;
+      flex-wrap:wrap;
+    }
+    
+    .date-pill{
+      background:#1a1a1a;
+      border:1px solid var(--border);
+      padding:10px 16px;
+      border-radius:999px;
+      font-size:13px;
+      color:var(--text-dim);
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    
+    .date-value{
+      color:var(--text);
+      font-weight:600;
+    }
+    
+    /* Action Buttons */
+    .actions{
+      display:flex;
+      gap:12px;
+      margin-top:24px;
+      flex-wrap:wrap;
+    }
+    
+    .btn{
+      background:#1a1a1a;
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:12px 24px;
+      border-radius:10px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all 0.2s;
+      font-family:inherit;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    
+    .btn:hover{
+      background:#252525;
+      border-color:var(--accent);
+      transform:translateY(-2px);
+    }
+    
+    /* Status Badge */
+    .status-badge{
+      display:inline-block;
+      padding:6px 14px;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    
+    .status-todo{
+      background:#2a2a2a;
+      color:var(--text-dim);
+    }
+    
+    .status-progress{
+      background:rgba(74, 158, 255, 0.15);
+      color:var(--blue);
+      border:1px solid rgba(74, 158, 255, 0.3);
+    }
+    
+    .status-done{
+      background:rgba(0, 212, 170, 0.15);
+      color:var(--accent);
+      border:1px solid rgba(0, 212, 170, 0.3);
+    }
+    
+    /* Empty State */
+    .empty{
+      text-align:center;
+      padding:80px 20px;
+      color:var(--text-dim);
+      font-size:16px;
+    }
+    
+    /* Footer */
+    footer{
+      text-align:center;
+      margin-top:60px;
+      padding-top:30px;
+      border-top:1px solid var(--border);
+      color:var(--text-dim);
+      font-size:13px;
+    }
+    
+    /* Modal for Invoice */
+    .modal{
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:rgba(0,0,0,0.85);
+      backdrop-filter:blur(10px);
+      z-index:1000;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    
+    .modal.active{
+      display:flex;
+    }
+    
+    .modal-content{
+      background:var(--bg-panel);
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:40px;
+      max-width:500px;
+      width:100%;
+      text-align:center;
+      position:relative;
+      animation:modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes modalIn{
+      from{ opacity:0; transform:scale(0.9) translateY(20px); }
+      to{ opacity:1; transform:scale(1) translateY(0); }
+    }
+    
+    .modal-close{
+      position:absolute;
+      top:20px;
+      right:20px;
+      background:none;
+      border:none;
+      color:var(--text-dim);
+      font-size:24px;
+      cursor:pointer;
+      padding:0;
+      width:32px;
+      height:32px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:8px;
+      transition:all 0.2s;
+    }
+    
+    .modal-close:hover{
+      background:#1a1a1a;
+      color:var(--text);
+    }
+    
+    .modal-icon{
+      font-size:48px;
+      margin-bottom:20px;
+    }
+    
+    .modal h2{
+      font-size:28px;
+      margin-bottom:12px;
+      color:var(--text);
+    }
+    
+    .modal p{
+      color:var(--text-dim);
+      margin-bottom:24px;
+      line-height:1.6;
+    }
+    
+    .discount-highlight{
+      background:var(--accent);
+      color:#000;
+      padding:20px;
+      border-radius:12px;
+      margin:24px 0;
+      font-weight:700;
+    }
+    
+    .discount-amount{
+      font-size:36px;
+      font-weight:900;
+    }
+    
+    .modal-actions{
+      display:flex;
+      gap:12px;
+      margin-top:24px;
+    }
+    
+    .modal-actions .btn{
+      flex:1;
+      justify-content:center;
+    }
+    
+    /* Responsive */
+    @media (max-width:768px){
+      h1{
+        font-size:36px;
+      }
+      
+      .task-card{
+        padding:24px;
+      }
+      
+      .timer-display{
+        font-size:48px;
+      }
+      
+      .timer-part-value{
+        font-size:32px;
+      }
+      
+      .gas-amount{
+        font-size:40px;
+      }
+      
+      .gas-section{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      
+      .invoice-btn{
+        width:100%;
+      }
+      
+      .task-title{
+        font-size:20px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="container">
     <header>
-      <div>
-        <h1>Schedule — E</h1>
-        <div class="sub">Public view (read-only) · Live updates remaining time</div>
-      </div>
+      <div class="logo">crono</div>
+      <h1>project timeline</h1>
+      <p class="subtitle">live tracking · real-time updates</p>
+      
       <div class="controls">
-        <input class="input" id="q" placeholder="Filter by key, summary, status, assignee…" />
+        <input class="input" id="q" placeholder="🔍 Filter tasks..." />
         <select class="select" id="status">
-          <option value="">All statuses</option>
+          <option value="">All Statuses</option>
           <option>To Do</option>
           <option>In Progress</option>
           <option>Completed</option>
@@ -88,20 +670,53 @@
       </div>
     </header>
 
-    <div id="board" class="board"></div>
-    <div id="empty" class="empty" style="display:none">No items to display.</div>
-    <footer id="stamp">Syncing…</footer>
+    <div id="tasks" class="tasks"></div>
+    <div id="empty" class="empty" style="display:none">
+      <div style="font-size:48px;margin-bottom:16px">📭</div>
+      No tasks to display
+    </div>
+
+    <footer id="footer">
+      syncing...
+    </footer>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div id="invoiceModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeInvoiceModal()">✕</button>
+      <div class="modal-icon">🧾</div>
+      <h2>Request Invoice</h2>
+      <p>Get an official invoice and save 5% on your total cost!</p>
+      
+      <div class="discount-highlight">
+        <div>You save</div>
+        <div class="discount-amount" id="discountAmount">$0</div>
+        <div style="font-size:14px;margin-top:8px">with invoice discount</div>
+      </div>
+      
+      <p style="font-size:13px">
+        Task: <strong id="invoiceTask"></strong><br>
+        Original: <span id="invoiceOriginal"></span> → 
+        <span style="color:var(--accent)">Final: <span id="invoiceFinal"></span></span>
+      </p>
+      
+      <div class="modal-actions">
+        <button class="btn" onclick="closeInvoiceModal()">Cancel</button>
+        <button class="invoice-btn" onclick="confirmInvoice()">📧 Send Invoice Request</button>
+      </div>
+    </div>
   </div>
 
   <script>
     // === Config ===
-    // Link to the "Crono" tab (with gid). Keep single=true&output=csv.
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxNrV687aUqrPHpPxy8oVNjUvilP2Nt76FI6CByIOmShtve6BnsB_JUb317Mb86faVkB0ulWPNof-J/pub?gid=0&single=true&output=csv";
     const CORS_PROXY = "https://api.allorigins.win/raw?url=";
-    const REFRESH_SEC = 120;               // smooth CSV refresh
-    const TIMEZONE = "America/Tijuana";    // your timezone
+    const REFRESH_SEC = 120;
+    const TIMEZONE = "America/Tijuana";
+    const DISCOUNT_PERCENT = 5;
     
-    // Fallback data in case CSV fetch fails
+    // Fallback data
     const FALLBACK_DATA = [
       {
         key: "LHR-70",
@@ -111,7 +726,7 @@
         assg: "",
         start: new Date("2025-09-06"),
         due: new Date("2025-09-30"),
-        color: "#34d399",
+        color: "#00d4aa",
         gas: 3232
       },
       {
@@ -122,7 +737,7 @@
         assg: "",
         start: new Date("2025-09-28"),
         due: new Date("2025-10-06"),
-        color: "#14b8a6",
+        color: "#4a9eff",
         gas: 4324
       },
       {
@@ -149,77 +764,48 @@
       }
     ];
 
-    // Colors by "Issue color" from the sheet (keywords)
     const COLORS = {
-      purple:"#a78bfa", green:"#34d399", orange:"#f59e0b", yellow:"#facc15",
-      dark_orange:"#ff8c42", dark_teal:"#14b8a6", blue:"#60a5fa",
-      default:"#9ca3af"
+      purple:"#a78bfa", green:"#00d4aa", orange:"#ff8c42", yellow:"#ffd166",
+      dark_orange:"#ff8c42", dark_teal:"#00d4aa", blue:"#4a9eff",
+      default:"#888888"
     };
 
+    // === State ===
+    let DATA = [];
+    let FILTERED = [];
+    let TIMER = null;
+    let LAST_SYNC = null;
+    let currentInvoiceTask = null;
+
     // === Helpers ===
-    const fmtDate = (d) => d ? d.toLocaleDateString("en-US", { timeZone: TIMEZONE }) : "—";
+    const fmtDate = (d) => d ? d.toLocaleDateString("en-US", { month:'short', day:'numeric', year:'numeric', timeZone: TIMEZONE }) : "—";
     const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+    
     const msToParts = (ms) => {
-      const neg = ms < 0; let m = Math.abs(ms);
+      const neg = ms < 0;
+      let m = Math.abs(ms);
       const d = Math.floor(m / 86400000); m -= d*86400000;
       const h = Math.floor(m / 3600000);  m -= h*3600000;
       const n = Math.floor(m / 60000);    m -= n*60000;
       const s = Math.floor(m / 1000);
       return {neg, d, h, n, s};
     };
-    const partsToStr = (p) => `${p.neg ? "-" : ""}${String(p.d).padStart(2,"0")}d:${String(p.h).padStart(2,"0")}h:${String(p.n).padStart(2,"0")}m:${String(p.s).padStart(2,"0")}s`;
+    
+    const partsToStr = (p) => {
+      const sign = p.neg ? "-" : "";
+      if(p.d > 0) return `${sign}${p.d}d ${String(p.h).padStart(2,"0")}h ${String(p.n).padStart(2,"0")}m`;
+      if(p.h > 0) return `${sign}${p.h}h ${String(p.n).padStart(2,"0")}m ${String(p.s).padStart(2,"0")}s`;
+      return `${sign}${p.n}m ${String(p.s).padStart(2,"0")}s`;
+    };
+    
     const safe = (v) => (v || "").trim();
     
-    // Calendar integration
-    const addToCalendar = (item) => {
-      const startDate = item.start ? item.start.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-      const endDate = item.due ? item.due.toISOString().split('T')[0] : startDate;
-      const title = `${item.key} - ${item.sum}`;
-      const details = `Budget: $${item.gas.toLocaleString()}\nStatus: ${item.state}\nAssignee: ${item.assg || 'Unassigned'}`;
-      
-      // Create Google Calendar URL
-      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}`;
-      
-      // Create ICS file for other calendar apps
-      const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Task Scheduler//EN
-BEGIN:VEVENT
-UID:${item.key}-${Date.now()}@crono.local
-DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
-DTSTART:${startDate.replace(/-/g, '')}
-DTEND:${endDate.replace(/-/g, '')}
-SUMMARY:${title}
-DESCRIPTION:${details.replace(/\n/g, '\\n')}
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR`;
-      
-      // Try to open Google Calendar first
-      window.open(googleUrl, '_blank');
-      
-      // Also provide download option for ICS
-      const blob = new Blob([icsContent], { type: 'text/calendar' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${item.key}-calendar.ics`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    };
-
-    // Dates from CSV come as "YYYY/MM/DD"
     const fixDate = (s) => {
       if (!s) return null;
-      const t = s.trim();
-      // Handle YYYY/MM/DD format directly
-      const d = new Date(t);
+      const d = new Date(s.trim());
       return isNaN(d) ? null : d;
     };
 
-    // CSV/TSV parser (simple, supports quotes and tabs)
     function parseCSV(text){
       const rows=[]; let row=[], cur="", inQ=false;
       for(let i=0;i<text.length;i++){
@@ -246,17 +832,50 @@ END:VCALENDAR`;
       return COLORS[k] || COLORS.default;
     }
 
-    // === State ===
-    let DATA = [];
-    let FILTERED = [];
-    let TIMER = null;
-    let LAST_SYNC = null;
-    let nextRefreshAt = null;
+    function getStatusClass(state){
+      const s = (state || "").toLowerCase();
+      if(s.includes("progress")) return "status-progress";
+      if(s.includes("complete") || s.includes("done")) return "status-done";
+      return "status-todo";
+    }
 
-    // === Fetch + Transform ===
+    // === Invoice Modal ===
+    function openInvoiceModal(task){
+      currentInvoiceTask = task;
+      const modal = document.getElementById("invoiceModal");
+      const discount = task.gas * (DISCOUNT_PERCENT / 100);
+      const final = task.gas - discount;
+      
+      document.getElementById("invoiceTask").textContent = `${task.key} - ${task.sum}`;
+      document.getElementById("invoiceOriginal").textContent = `$${task.gas.toLocaleString()}`;
+      document.getElementById("invoiceFinal").textContent = `$${final.toLocaleString()}`;
+      document.getElementById("discountAmount").textContent = `$${discount.toLocaleString()}`;
+      
+      modal.classList.add("active");
+    }
+
+    function closeInvoiceModal(){
+      document.getElementById("invoiceModal").classList.remove("active");
+      currentInvoiceTask = null;
+    }
+
+    function confirmInvoice(){
+      if(!currentInvoiceTask) return;
+      
+      const task = currentInvoiceTask;
+      const discount = task.gas * (DISCOUNT_PERCENT / 100);
+      const final = task.gas - discount;
+      
+      const subject = `Invoice Request: ${task.key}`;
+      const body = `Hi,\n\nI would like to request an invoice for the following task:\n\nTask: ${task.key} - ${task.sum}\nOriginal Amount: $${task.gas.toLocaleString()}\nDiscount (${DISCOUNT_PERCENT}%): -$${discount.toLocaleString()}\nFinal Amount: $${final.toLocaleString()}\n\nThank you!`;
+      
+      window.location.href = `mailto:billing@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      closeInvoiceModal();
+    }
+
+    // === Load Data ===
     async function loadCSV(){
       try {
-        // Try direct fetch first
         let res, txt;
         try {
           res = await fetch(CSV_URL, { cache:"no-store" });
@@ -264,14 +883,12 @@ END:VCALENDAR`;
           txt = await res.text();
         } catch (directError) {
           console.log("Direct fetch failed, trying CORS proxy...", directError.message);
-          // Try with CORS proxy
           res = await fetch(CORS_PROXY + encodeURIComponent(CSV_URL), { cache:"no-store" });
           if (!res.ok) throw new Error(`CORS proxy fetch failed: ${res.status}`);
           txt = await res.text();
         }
         
         const rows = parseCSV(txt);
-
         if (!rows.length) {
           console.log("No data in CSV, using fallback data");
           return FALLBACK_DATA;
@@ -313,7 +930,6 @@ END:VCALENDAR`;
           out.push({ key, type, sum, state, assg, start, due, color, gas });
         }
 
-        // Sort by due date ascending
         out.sort((a,b)=>{
           const ax = a.due ? a.due.getTime():Infinity;
           const bx = b.due ? b.due.getTime():Infinity;
@@ -329,9 +945,9 @@ END:VCALENDAR`;
 
     // === Render ===
     function render(){
-      const board = document.getElementById("board");
+      const container = document.getElementById("tasks");
       const empty = document.getElementById("empty");
-      board.innerHTML = "";
+      container.innerHTML = "";
 
       const q = document.getElementById("q").value.trim().toLowerCase();
       const st = document.getElementById("status").value;
@@ -354,42 +970,91 @@ END:VCALENDAR`;
         const dueMs   = it.due ? it.due.getTime() : now + 1;
         const span = Math.max(1, dueMs - startMs);
         const pct = Math.round(100 * clamp(now - startMs, 0, span) / span);
-        const daysLeft = Math.ceil((dueMs - now) / 86400000);
+        const delta = dueMs - now;
+        const parts = msToParts(delta);
+        
+        let timerClass = "normal";
+        if(delta < 0) timerClass = "critical";
+        else if(delta < 3*86400000) timerClass = "warning";
 
         const card = document.createElement("div");
-        card.className = "card";
+        card.className = "task-card";
+        card.style.borderTopColor = it.color;
+        
         card.innerHTML = `
-          <div class="row1">
-            <div class="left">
-              <span class="dot" style="background:${it.color}"></span>
-              <span class="key">${it.key || "—"}</span>
-              <span class="sum" title="${it.sum || ""}">· ${it.sum || ""}</span>
-            </div>
-            <div class="badges">
-              <span class="gas-cost">$${it.gas.toLocaleString()}</span>
-              ${it.state ? `<span class="badge">${it.state}</span>` : ""}
-              ${it.assg ? `<span class="badge">👤 ${it.assg}</span>` : ""}
-              ${it.type ? `<span class="badge">${it.type}</span>` : ""}
-              ${Number.isFinite(daysLeft) ? `<span class="badge">📅 ${daysLeft >= 0 ? daysLeft+'d remaining' : Math.abs(daysLeft)+'d overdue'}</span>` : ""}
-              <button class="calendar-btn" onclick="addToCalendar(${JSON.stringify(it).replace(/"/g, '&quot;')})">📅 Add to Calendar</button>
+          <div class="task-header">
+            <div class="task-info">
+              <div class="task-key">${it.key || "—"}</div>
+              <div class="task-title">${it.sum || "Untitled Task"}</div>
+              <div class="task-meta">
+                ${it.state ? `<span class="status-badge ${getStatusClass(it.state)}">${it.state}</span>` : ""}
+                ${it.assg ? `<span class="meta-item">👤 ${it.assg}</span>` : ""}
+                ${it.type ? `<span class="meta-item">📋 ${it.type}</span>` : ""}
+              </div>
             </div>
           </div>
-          <div class="row2">
-            <div class="bar">
-              <div class="fill" style="width:${isFinite(pct) ? pct : 0}%; background:${it.color};"></div>
-              <div class="bar-text">${isFinite(pct) ? pct : 0}%</div>
-              ${(it.start && it.due) ? `<div class="today" style="left:${clamp(100*(now - startMs)/span,0,100)}%;"></div>` : ""}
+
+          <div class="timer-section">
+            <div class="timer-label">⏱️ time remaining</div>
+            <div class="timer-display ${timerClass}" data-key="${it.key}">
+              ${partsToStr(parts)}
+            </div>
+            <div class="timer-parts">
+              <div class="timer-part">
+                <span class="timer-part-value" data-key="${it.key}-d">${Math.abs(parts.d)}</span>
+                <span class="timer-part-label">days</span>
+              </div>
+              <div class="timer-part">
+                <span class="timer-part-value" data-key="${it.key}-h">${String(Math.abs(parts.h)).padStart(2,"0")}</span>
+                <span class="timer-part-label">hours</span>
+              </div>
+              <div class="timer-part">
+                <span class="timer-part-value" data-key="${it.key}-m">${String(Math.abs(parts.n)).padStart(2,"0")}</span>
+                <span class="timer-part-label">minutes</span>
+              </div>
+              <div class="timer-part">
+                <span class="timer-part-value" data-key="${it.key}-s">${String(Math.abs(parts.s)).padStart(2,"0")}</span>
+                <span class="timer-part-label">seconds</span>
+              </div>
             </div>
           </div>
-          <div class="row3">
+
+          <div class="gas-section">
+            <div class="gas-info">
+              <div class="gas-label">
+                ⛽ project cost
+                <span class="discount-badge">-5% with invoice</span>
+              </div>
+              <div class="gas-amount">$${it.gas.toLocaleString()}</div>
+            </div>
+            <button class="invoice-btn" onclick='openInvoiceModal(${JSON.stringify(it)})'>
+              🧾 Request Invoice
+            </button>
+          </div>
+
+          <div class="progress-section">
+            <div class="progress-header">
+              <span>Progress</span>
+              <span>${isFinite(pct) ? pct : 0}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${isFinite(pct) ? pct : 0}%; background:linear-gradient(90deg, ${it.color} 0%, ${it.color}88 100%);"></div>
+            </div>
+          </div>
+
             <div class="dates">
-              <span class="pill">Start: ${fmtDate(it.start)}</span>
-              <span class="pill">Due: ${fmtDate(it.due)}</span>
+            <div class="date-pill">
+              <span>📅 Start:</span>
+              <span class="date-value">${fmtDate(it.start)}</span>
             </div>
-            <div class="count" data-key="${it.key}">—</div>
+            <div class="date-pill">
+              <span>🎯 Due:</span>
+              <span class="date-value">${fmtDate(it.due)}</span>
+            </div>
           </div>
         `;
-        board.appendChild(card);
+        
+        container.appendChild(card);
       });
 
       if (TIMER) clearInterval(TIMER);
@@ -402,17 +1067,31 @@ END:VCALENDAR`;
       FILTERED.forEach(it=>{
         const dueMs = it.due ? it.due.getTime() : now;
         const delta = dueMs - now;
-        const el = document.querySelector(`.count[data-key="${CSS.escape(it.key)}"]`);
-        if (!el) return;
-        const p = msToParts(delta);
-        el.textContent = partsToStr(p);
-        el.classList.toggle("late", delta < 0);
-        el.classList.toggle("warn", delta >= 0 && delta <= 3*86400000);
+        const parts = msToParts(delta);
+        
+        const mainTimer = document.querySelector(`.timer-display[data-key="${CSS.escape(it.key)}"]`);
+        if(mainTimer){
+          mainTimer.textContent = partsToStr(parts);
+          mainTimer.className = "timer-display";
+          if(delta < 0) mainTimer.classList.add("critical");
+          else if(delta < 3*86400000) mainTimer.classList.add("warning");
+          else mainTimer.classList.add("normal");
+        }
+
+        const dEl = document.querySelector(`.timer-part-value[data-key="${CSS.escape(it.key)}-d"]`);
+        const hEl = document.querySelector(`.timer-part-value[data-key="${CSS.escape(it.key)}-h"]`);
+        const mEl = document.querySelector(`.timer-part-value[data-key="${CSS.escape(it.key)}-m"]`);
+        const sEl = document.querySelector(`.timer-part-value[data-key="${CSS.escape(it.key)}-s"]`);
+        
+        if(dEl) dEl.textContent = Math.abs(parts.d);
+        if(hEl) hEl.textContent = String(Math.abs(parts.h)).padStart(2,"0");
+        if(mEl) mEl.textContent = String(Math.abs(parts.n)).padStart(2,"0");
+        if(sEl) sEl.textContent = String(Math.abs(parts.s)).padStart(2,"0");
       });
-      const stamp = document.getElementById("stamp");
+
+      const footer = document.getElementById("footer");
       if (LAST_SYNC) {
-        const left = nextRefreshAt ? Math.max(0, Math.round((nextRefreshAt - Date.now())/1000)) : REFRESH_SEC;
-        stamp.textContent = `Updated: ${LAST_SYNC.toLocaleString("en-US", { timeZone: TIMEZONE })} · Next refresh in ~${left}s`;
+        footer.textContent = `last update: ${LAST_SYNC.toLocaleTimeString("en-US", { timeZone: TIMEZONE })}`;
       }
     }
 
@@ -420,24 +1099,12 @@ END:VCALENDAR`;
       try{
         DATA = await loadCSV();
         LAST_SYNC = new Date();
-        nextRefreshAt = Date.now() + REFRESH_SEC*1000;
         render();
-        
-        // Update status message
-        const stamp = document.getElementById("stamp");
-        if (DATA === FALLBACK_DATA) {
-          stamp.textContent = "Using fallback data (offline mode)";
-        } else {
-          const left = nextRefreshAt ? Math.max(0, Math.round((nextRefreshAt - Date.now())/1000)) : REFRESH_SEC;
-          stamp.textContent = `Updated: ${LAST_SYNC.toLocaleString("en-US", { timeZone: TIMEZONE })} · Next refresh in ~${left}s`;
-        }
       }catch(e){
         console.error(e);
         const empty = document.getElementById("empty");
         empty.style.display = "block";
-        empty.textContent = `Error: ${e.message}`;
-        const stamp = document.getElementById("stamp");
-        stamp.textContent = `Error loading data: ${e.message}`;
+        empty.innerHTML = `<div style="font-size:48px;margin-bottom:16px">⚠️</div>Error: ${e.message}`;
       }finally{
         setTimeout(bootstrap, REFRESH_SEC*1000);
       }
@@ -446,7 +1113,18 @@ END:VCALENDAR`;
     document.getElementById("q").addEventListener("input", render);
     document.getElementById("status").addEventListener("change", render);
 
+    // Close modal on escape
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape") closeInvoiceModal();
+    });
+
+    // Close modal on background click
+    document.getElementById("invoiceModal").addEventListener("click", (e) => {
+      if(e.target.id === "invoiceModal") closeInvoiceModal();
+    });
+
     bootstrap();
   </script>
 </body>
 </html>
+
