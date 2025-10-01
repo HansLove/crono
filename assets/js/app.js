@@ -298,19 +298,29 @@ function updateSummary(){
     return dueMs >= now && dueMs <= now + threeDays;
   }).length;
   
-  document.getElementById("totalTasks").textContent = totalTasks;
-  document.getElementById("totalCost").textContent = `$${totalCost.toLocaleString()}`;
-  document.getElementById("overdueCount").textContent = overdue;
-  document.getElementById("dueSoonCount").textContent = dueSoon;
+  // Safety checks for DOM elements
+  const totalTasksEl = document.getElementById("totalTasks");
+  const totalCostEl = document.getElementById("totalCost");
+  const overdueCountEl = document.getElementById("overdueCount");
+  const dueSoonCountEl = document.getElementById("dueSoonCount");
+  
+  if (totalTasksEl) totalTasksEl.textContent = totalTasks;
+  if (totalCostEl) totalCostEl.textContent = `$${totalCost.toLocaleString()}`;
+  if (overdueCountEl) overdueCountEl.textContent = overdue;
+  if (dueSoonCountEl) dueSoonCountEl.textContent = dueSoon;
 }
 
 function render(){
   const container = document.getElementById("tasks");
   const empty = document.getElementById("empty");
+  if (!container || !empty) return; // Safety check
+  
   container.innerHTML = "";
 
-  const q = document.getElementById("q").value.trim().toLowerCase();
-  const st = document.getElementById("status").value;
+  const qInput = document.getElementById("q");
+  const statusSelect = document.getElementById("status");
+  const q = qInput ? qInput.value.trim().toLowerCase() : "";
+  const st = statusSelect ? statusSelect.value : "";
 
   FILTERED = DATA.filter(it=>{
     const matchQ = !q || [it.key, it.sum, it.state, it.assg].some(v => (v||"").toLowerCase().includes(q));
@@ -444,10 +454,148 @@ async function bootstrap(){
   }
 }
 
+// === Component Loading ===
+async function loadComponent(path) {
+  try {
+    const response = await fetch(path);
+    if (!response.ok) throw new Error(`Failed to load component: ${path}`);
+    return await response.text();
+  } catch (error) {
+    console.log("Component fetch failed, using fallback:", error.message);
+    return null;
+  }
+}
+
+// Fallback components for when fetch fails (file:// protocol)
+const FALLBACK_COMPONENTS = {
+  header: `
+    <!-- Optimized Header Component -->
+    <div class="header-compact">
+      <!-- Top Row: Controls and Primary Stats -->
+      <div class="header-top">
+        <div class="controls-compact">
+          <input class="input-compact" id="q" placeholder="🔍 Filter tasks..." />
+          <select class="select-compact" id="status">
+            <option value="">All Statuses</option>
+            <option>To Do</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+        </div>
+        <div class="stats-compact">
+          <div class="stat-item primary">
+            <div class="stat-value" id="totalTasks">0</div>
+            <div class="stat-label">Tasks</div>
+          </div>
+          <div class="stat-item accent">
+            <div class="stat-value" id="totalCost">$0</div>
+            <div class="stat-label">Total Cost</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Bottom Row: Alert Stats -->
+      <div class="header-bottom">
+        <div class="alerts-compact">
+          <div class="alert-item critical" id="overdueAlert">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <div class="alert-value" id="overdueCount">0</div>
+              <div class="alert-label">Overdue</div>
+            </div>
+          </div>
+          <div class="alert-item warning" id="dueSoonAlert">
+            <div class="alert-icon">⏰</div>
+            <div class="alert-content">
+              <div class="alert-value" id="dueSoonCount">0</div>
+              <div class="alert-label">Due Soon</div>
+            </div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="action-btn refresh-btn" id="refreshBtn" title="Refresh Data">
+            🔄
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
+  modal: `
+    <!-- Invoice Modal Component -->
+    <div id="invoiceModal" class="modal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeInvoiceModal()">✕</button>
+        <div class="modal-icon">🧾</div>
+        <h2>Request Invoice</h2>
+        <p>Get an official invoice and save 5% on your total cost!</p>
+        
+        <div class="discount-highlight">
+          <div>You save</div>
+          <div class="discount-amount" id="discountAmount">$0</div>
+          <div style="font-size:14px;margin-top:8px">with invoice discount</div>
+        </div>
+        
+        <p style="font-size:13px">
+          Task: <strong id="invoiceTask"></strong><br>
+          Original: <span id="invoiceOriginal"></span> → 
+          <span style="color:var(--accent)">Final: <span id="invoiceFinal"></span></span>
+        </p>
+        
+        <div class="modal-actions">
+          <button class="btn" onclick="closeInvoiceModal()">Cancel</button>
+          <button class="invoice-btn" onclick="confirmInvoice()">📧 Send Invoice Request</button>
+        </div>
+      </div>
+    </div>
+  `
+};
+
+async function loadComponents() {
+  // Try to load header component
+  let headerHtml = await loadComponent("components/header.html");
+  if (!headerHtml) {
+    headerHtml = FALLBACK_COMPONENTS.header;
+  }
+  
+  const headerContainer = document.getElementById("header-container");
+  if (headerContainer && headerHtml) {
+    headerContainer.innerHTML = headerHtml;
+  }
+
+  // Try to load modal component
+  let modalHtml = await loadComponent("components/modal.html");
+  if (!modalHtml) {
+    modalHtml = FALLBACK_COMPONENTS.modal;
+  }
+  
+  const modalContainer = document.getElementById("modal-container");
+  if (modalContainer && modalHtml) {
+    modalContainer.innerHTML = modalHtml;
+  }
+}
+
 // === Event Listeners ===
-document.addEventListener("DOMContentLoaded", function() {
-  document.getElementById("q").addEventListener("input", render);
-  document.getElementById("status").addEventListener("change", render);
+document.addEventListener("DOMContentLoaded", async function() {
+  // Load components first
+  await loadComponents();
+
+  // Set up event listeners
+  const qInput = document.getElementById("q");
+  const statusSelect = document.getElementById("status");
+  const refreshBtn = document.getElementById("refreshBtn");
+
+  if (qInput) qInput.addEventListener("input", render);
+  if (statusSelect) statusSelect.addEventListener("change", render);
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => {
+      bootstrap();
+      // Add visual feedback
+      refreshBtn.style.transform = "rotate(360deg)";
+      setTimeout(() => {
+        refreshBtn.style.transform = "";
+      }, 500);
+    });
+  }
 
   // Close modal on escape
   document.addEventListener("keydown", (e) => {
@@ -455,9 +603,12 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // Close modal on background click
-  document.getElementById("invoiceModal").addEventListener("click", (e) => {
-    if(e.target.id === "invoiceModal") closeInvoiceModal();
-  });
+  const modal = document.getElementById("invoiceModal");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if(e.target.id === "invoiceModal") closeInvoiceModal();
+    });
+  }
 
   bootstrap();
 });

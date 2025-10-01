@@ -8,39 +8,8 @@
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="controls">
-        <input class="input" id="q" placeholder="🔍 Filter tasks..." />
-        <select class="select" id="status">
-          <option value="">All Statuses</option>
-          <option>To Do</option>
-          <option>In Progress</option>
-          <option>Completed</option>
-        </select>
-      </div>
-      
-      <!-- Data Summary -->
-      <div class="data-summary">
-        <div class="summary-grid">
-          <div class="summary-item">
-            <div class="summary-label">Total Tasks</div>
-            <div class="summary-value" id="totalTasks">0</div>
-          </div>
-          <div class="summary-item">
-            <div class="summary-label">Total Cost</div>
-            <div class="summary-value" id="totalCost">$0</div>
-          </div>
-          <div class="summary-item">
-            <div class="summary-label">Overdue</div>
-            <div class="summary-value critical" id="overdueCount">0</div>
-          </div>
-          <div class="summary-item">
-            <div class="summary-label">Due Soon</div>
-            <div class="summary-value warning" id="dueSoonCount">0</div>
-          </div>
-        </div>
-      </div>
-    </header>
+    <!-- Header Component will be loaded here -->
+    <header id="header-container"></header>
 
     <div id="tasks" class="tasks"></div>
     <div id="empty" class="empty" style="display:none">
@@ -53,32 +22,8 @@
     </footer>
   </div>
 
-  <!-- Invoice Modal -->
-  <div id="invoiceModal" class="modal">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeInvoiceModal()">✕</button>
-      <div class="modal-icon">🧾</div>
-      <h2>Request Invoice</h2>
-      <p>Get an official invoice and save 5% on your total cost!</p>
-      
-      <div class="discount-highlight">
-        <div>You save</div>
-        <div class="discount-amount" id="discountAmount">$0</div>
-        <div style="font-size:14px;margin-top:8px">with invoice discount</div>
-      </div>
-      
-      <p style="font-size:13px">
-        Task: <strong id="invoiceTask"></strong><br>
-        Original: <span id="invoiceOriginal"></span> → 
-        <span style="color:var(--accent)">Final: <span id="invoiceFinal"></span></span>
-      </p>
-      
-      <div class="modal-actions">
-        <button class="btn" onclick="closeInvoiceModal()">Cancel</button>
-        <button class="invoice-btn" onclick="confirmInvoice()">📧 Send Invoice Request</button>
-      </div>
-    </div>
-  </div>
+  <!-- Modal Component will be loaded here -->
+  <div id="modal-container"></div>
 
   <script src="assets/js/app.js"></script>
 </body>

@@ -1,0 +1,26 @@
+<!-- Invoice Modal Component -->
+<div id="invoiceModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeInvoiceModal()">✕</button>
+    <div class="modal-icon">🧾</div>
+    <h2>Request Invoice</h2>
+    <p>Get an official invoice and save 5% on your total cost!</p>
+    
+    <div class="discount-highlight">
+      <div>You save</div>
+      <div class="discount-amount" id="discountAmount">$0</div>
+      <div style="font-size:14px;margin-top:8px">with invoice discount</div>
+    </div>
+    
+    <p style="font-size:13px">
+      Task: <strong id="invoiceTask"></strong><br>
+      Original: <span id="invoiceOriginal"></span> → 
+      <span style="color:var(--accent)">Final: <span id="invoiceFinal"></span></span>
+    </p>
+    
+    <div class="modal-actions">
+      <button class="btn" onclick="closeInvoiceModal()">Cancel</button>
+      <button class="invoice-btn" onclick="confirmInvoice()">📧 Send Invoice Request</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,50 @@
+<!-- Optimized Header Component -->
+<div class="header-compact">
+  <!-- Top Row: Controls and Primary Stats -->
+  <div class="header-top">
+    <div class="controls-compact">
+      <input class="input-compact" id="q" placeholder="🔍 Filter tasks..." />
+      <select class="select-compact" id="status">
+        <option value="">All Statuses</option>
+        <option>To Do</option>
+        <option>In Progress</option>
+        <option>Completed</option>
+      </select>
+    </div>
+    <div class="stats-compact">
+      <div class="stat-item primary">
+        <div class="stat-value" id="totalTasks">0</div>
+        <div class="stat-label">Tasks</div>
+      </div>
+      <div class="stat-item accent">
+        <div class="stat-value" id="totalCost">$0</div>
+        <div class="stat-label">Total Cost</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bottom Row: Alert Stats -->
+  <div class="header-bottom">
+    <div class="alerts-compact">
+      <div class="alert-item critical" id="overdueAlert">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <div class="alert-value" id="overdueCount">0</div>
+          <div class="alert-label">Overdue</div>
+        </div>
+      </div>
+      <div class="alert-item warning" id="dueSoonAlert">
+        <div class="alert-icon">⏰</div>
+        <div class="alert-content">
+          <div class="alert-value" id="dueSoonCount">0</div>
+          <div class="alert-label">Due Soon</div>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="action-btn refresh-btn" id="refreshBtn" title="Refresh Data">
+        🔄
+      </button>
+    </div>
+  </div>
+</div>
